@@ -1,5 +1,5 @@
 # 🌱 STM32 Smart Farm System
-**Built by Team 7: 연구하세용 (Research Dragon 🐉)**
+**Built by Team: 연구하세용**
 
 STM32F411 칩셋을 활용하여 베어메탈(Bare-metal / Register-level) 환경에서 C언어로 구현한 **'지능형 자동화 스마트팜 시스템'**입니다. 단순히 센서 값을 읽는 것을 넘어, 이동 평균 필터(Moving Average Filter), 히스테리시스(Hysteresis), 소프트웨어 디바운싱(Debouncing), Non-blocking 상태 머신 등을 적용하여 실제 상용 제품 수준의 안정성을 목표로 개발했습니다.
 
