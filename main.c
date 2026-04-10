@@ -63,6 +63,7 @@ int Main(void)
     int light_avg = 0;
     int samples_filled = 0;
     unsigned int last_light_sample_time = 0;
+    static int current_led_level = 0;
 
     int target_blind_state = 0; 
     int current_blind_state = 0;
@@ -199,31 +200,39 @@ int Main(void)
         }
 
         // 조도량에 따른 LED 제어
-        if (light_avg < 500) {
-            Env_LED_Set(3);
-        } else if (light_avg < 800) {
-            Env_LED_Set(2);
-        } else if (light_avg < 1200) {
-            Env_LED_Set(1);
-        } else {
-            Env_LED_Set(0);
+        if (current_led_level == 3) {
+            if (light_avg > 550) current_led_level = 2;
+        } 
+        else if (current_led_level == 2) {
+            if (light_avg < 450) current_led_level = 3;
+            else if (light_avg > 850) current_led_level = 1;
+        } 
+        else if (current_led_level == 1) {
+            if (light_avg < 750) current_led_level = 2;
+            else if (light_avg > 1250) current_led_level = 0;
+        } 
+        else if (current_led_level == 0) {
+            if (light_avg < 1150) current_led_level = 1;
         }
+        Env_LED_Set(current_led_level);
 
         // 블라인드 제어
-        if (light_avg > 1700) target_blind_state = 1;      // 닫기
-        else if (light_avg < 1200) target_blind_state = 0; // 열기
+        if (light_avg > 1700) target_blind_state = 1;
+        else if (light_avg < 1200) target_blind_state = 0;
 
         if (current_blind_state != target_blind_state) {
             is_active = 1;
             RGB_LED_Set(3); 
             
             if (target_blind_state == 1) {
-                Step_Move_Angle(120); 
+                Step_Move_Angle(120);
             } else {
                 Step_Move_Angle(-120); 
             }
             current_blind_state = target_blind_state;
         }
+
+        Step_Task();
 
         // 시스템 상태 표시 (RGB LED 점멸 로직)
         if (is_active) {

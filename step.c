@@ -1,6 +1,13 @@
 #include "device_driver.h"
 #include <stdio.h>
 
+// Non-Blocking 적용을 위한 변수 선언
+volatile int step_target_count = 0;
+volatile int step_current_count = 0;
+volatile int step_dir_current = 0;
+volatile int step_seq_idx = 0;
+unsigned int last_step_tick = 0;
+
 void Step_Init(void)
 {
     Macro_Set_Bit(RCC->AHB1ENR, 1);
@@ -14,10 +21,10 @@ void Step_Init(void)
     Macro_Clear_Bit(GPIOB->OTYPER, 10);
     Macro_Clear_Bit(GPIOB->OTYPER, 14);
 
-    // Read-Modify-Write 방식으로 안전하게 초기화
     int mask = (1<<8)|(1<<9)|(1<<10)|(1<<14);
     GPIOB->ODR &= ~mask;
 }
+
 
 static void Step_Drive(int seq_idx)
 {
@@ -34,32 +41,43 @@ static void Step_Drive(int seq_idx)
 
     int mask = (1<<8)|(1<<9)|(1<<10)|(1<<14);
     GPIOB->ODR = (GPIOB->ODR & ~mask) | out;
-
-    for(volatile int i=0; i<80000; i++); // 속도 조절 딜레이
-}
-
-void Step_Move(int steps, int dir)
-{
-    int seq = 0;
-
-    for(int i=0;i<steps;i++)
-    {
-        Step_Drive(seq);
-        seq += dir;
-
-        if(seq > 7) seq = 0;
-        if(seq < 0) seq = 7;
-    }
-
-    GPIOB->ODR &= ~((1<<8)|(1<<9)|(1<<10)|(1<<14));
 }
 
 void Step_Move_Angle(int angle)
 {
     int steps = (2048 * angle) / 360;
+    
+    if(steps > 0) {
+        step_target_count = steps;
+        step_dir_current = 1;
+    } else if(steps < 0) {
+        step_target_count = -steps;
+        step_dir_current = -1;
+    }
+    step_current_count = 0;
+}
 
-    if(steps > 0)
-        Step_Move(steps, 1);
-    else if(steps < 0)
-        Step_Move(-steps, -1);
+void Step_Task(void)
+{
+    extern volatile unsigned int System_Tick;
+
+    if (step_current_count < step_target_count) 
+    {
+        if (System_Tick - last_step_tick >= 2) 
+        {
+            Step_Drive(step_seq_idx);
+            
+            step_seq_idx += step_dir_current;
+            if(step_seq_idx > 7) step_seq_idx = 0;
+            if(step_seq_idx < 0) step_seq_idx = 7;
+
+            step_current_count++;
+            last_step_tick = System_Tick;
+        }
+    } 
+    else if (step_target_count > 0 && step_current_count == step_target_count) 
+    {
+        GPIOB->ODR &= ~((1<<8)|(1<<9)|(1<<10)|(1<<14));
+        step_target_count = 0;
+    }
 }

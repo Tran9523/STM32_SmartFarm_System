@@ -39,8 +39,9 @@ extern void Buzzer_Set(int freq);
 
 // Step Motor
 extern void Step_Init(void);
-extern void Step_Move(int steps, int dir);
 extern void Step_Move_Angle(int angle);
+extern void Step_Task(void);
+
 
 // Pump (급수 제어 DC 모터)
 extern void Pump_Init(void); // PB1, PB2
