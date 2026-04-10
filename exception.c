@@ -6,7 +6,7 @@
 // ========================================================
 volatile int Emergency_Flag = 0;       
 
-// [신규] 화재 센서 노이즈 필터링 카운터
+// 화재 센서 노이즈 필터링 카운터
 volatile unsigned int fire_detect_count = 0; 
 
 extern volatile char Uart_Data;
@@ -30,15 +30,15 @@ void TIM4_IRQHandler(void)
         Macro_Clear_Bit(TIM4->SR, 0); 
         System_Tick++;  
 
-        // 🚨 [신규] 화재 센서 2초 연속 감지 필터링 로직
+        // 🚨 화재 센서 1초 연속 감지 필터링 로직
         if (Emergency_Flag == 0) 
         {
             // PC12 핀이 High(불꽃 감지) 상태인지 확인
             if (Macro_Check_Bit_Set(GPIOC->IDR, 12)) {
                 fire_detect_count++;
                 
-                // 2000ms (2초) 동안 단 한 번도 안 끊기고 감지되었다면?
-                if (fire_detect_count >= 2000) {
+                // 1000ms (1초) 동안 단 한 번도 안 끊기고 감지되었다면?
+                if (fire_detect_count >= 1000) {
                     Emergency_Flag = 1; // 진짜 비상사태 발동!
                     
                     printf("\r\n🔥 [EMERGENCY] FIRE DETECTED (2 Sec Verified)! 🔥\r\n");
@@ -74,7 +74,6 @@ void Fire_Interrupt_Init(void)
     Macro_Set_Bit(RCC->APB2ENR, 14); // SYSCFG 클럭 ON
 
     // [1] PC12 화재 센서 설정 (Input, Pull-down) 
-    // ※ 주의: 이제 EXTI 연결은 하지 않습니다! TIM4가 읽을 겁니다.
     Macro_Write_Block(GPIOC->MODER, 0x3, 0x0, 24); 
     Macro_Write_Block(GPIOC->PUPDR, 0x3, 0x2, 24); 
 
@@ -90,7 +89,7 @@ void Fire_Interrupt_Init(void)
 }
 
 // ========================================================
-// 6. EXTI15~10 인터럽트 (이제 PC13 해제 버튼만 담당합니다)
+// 6. EXTI15~10 인터럽트 (PC13 해제 버튼)
 // ========================================================
 void EXTI15_10_IRQHandler(void)
 {

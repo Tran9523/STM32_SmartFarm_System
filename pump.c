@@ -9,7 +9,7 @@ void Pump_Init(void)
     Macro_Write_Block(GPIOB->MODER, 0x3, 0x1, 4); // PB2: Out 모드 (DIR)
     Macro_Write_Block(GPIOB->AFR[0], 0xF, 0x2, 4); // PB1 -> AF2 (TIM3_CH4)
 
-    // [중요] 96MHz / 960 = 100kHz 틱 (10us)
+    // 96MHz / 960 = 100kHz 틱 (10us)
     TIM3->PSC = 960 - 1; 
     TIM3->ARR = 100 - 1; // 10us * 100 = 1ms (1kHz PWM)
     
@@ -21,7 +21,7 @@ void Pump_Init(void)
 void Pump_Set(int enable, int duty)
 {
     if(enable) {
-        Macro_Set_Bit(GPIOB->ODR, 2); // 방향 (모터 드라이버 배선에 따라 다를 수 있음)
+        Macro_Set_Bit(GPIOB->ODR, 2); // 방향
         TIM3->CCR4 = duty;            // 0 ~ 100% 속도
     } else {
         Macro_Clear_Bit(GPIOB->ODR, 2);

@@ -15,7 +15,6 @@ void Indicator_Init(void)
     GPIOA->ODR &= ~((1<<5)|(1<<8)|(1<<9)); // 초기 끄기
 
     // 3. 부저 (PB0 - TIM3_CH3) 설정
-    // ※ 주의: TIM3 클럭 활성화와 기본 설정(PSC=960-1)은 pump.c에서 이미 수행됨!
     Macro_Set_Bit(RCC->AHB1ENR, 1);
     Macro_Set_Bit(RCC->APB1ENR, 1);
     Macro_Write_Block(GPIOB->MODER, 0x3, 0x2, 0);  // PB0 AF 모드
@@ -46,7 +45,6 @@ void Buzzer_Set(int freq) {
         TIM3->CCR3 = 0;       // 소리 끄기
         TIM3->ARR = 100 - 1;  // 펌프의 기본 ARR(1ms)로 원상복구!
     } else {
-        // pump.c에서 설정한 100kHz 틱 기준 역산 (예: 2000Hz = 50-1)
         TIM3->ARR = (100000 / freq) - 1; 
         TIM3->CCR3 = TIM3->ARR / 2; // Duty 50%
     }

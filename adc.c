@@ -21,7 +21,7 @@ int ADC1_Read_Channel(int ch)
     // 변환 시작
     Macro_Set_Bit(ADC1->CR2, 30); // SWSTART
     
-    // 변환 완료 대기 (이 정도 대기는 매우 짧아 시스템에 지장 없음)
+    // 변환 완료 대기
     while(!Macro_Check_Bit_Set(ADC1->SR, 1)); 
     
     return ADC1->DR;

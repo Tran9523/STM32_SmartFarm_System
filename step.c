@@ -1,8 +1,6 @@
 #include "device_driver.h"
 #include <stdio.h>
 
-static int state = 0; // 내부 상태 관리
-
 void Step_Init(void)
 {
     Macro_Set_Bit(RCC->AHB1ENR, 1);
@@ -34,7 +32,7 @@ static void Step_Drive(int seq_idx)
     if(pattern[seq_idx][2]) out |= (1<<10);
     if(pattern[seq_idx][3]) out |= (1<<14);
 
-    // [수정됨] 다른 핀(부저, 펌프)에 영향을 주지 않도록 안전하게 업데이트!
+    // 안전하게 업데이트!
     int mask = (1<<8)|(1<<9)|(1<<10)|(1<<14);
     GPIOB->ODR = (GPIOB->ODR & ~mask) | out;
 
@@ -65,48 +63,4 @@ void Step_Move_Angle(int angle)
         Step_Move(steps, 1);
     else if(steps < 0)
         Step_Move(-steps, -1);
-}
-
-
-
-void Step_Control(int cds)
-{
-    // 밝음
-    if(cds > 1700)
-    {
-        if(state != 1)
-        {
-            printf("Bright → Forward 45deg\n");
-            Step_Move_Angle(120);
-            state = 1;
-        }
-    }
-
-    // 어두움
-    else if(cds < 800)
-    {
-        if(state != -1)
-        {
-            printf("Dark → Backward 45deg\n");
-            Step_Move_Angle(-120);
-            state = -1;
-        }
-    }
-
-    // 중간 → 원점
-    else
-    {
-        if(state == 1)
-        {
-            printf("Return to center\n");
-            Step_Move_Angle(-120);
-            state = 0;
-        }
-        else if(state == -1)
-        {
-            printf("Return to center\n");
-            Step_Move_Angle(120);
-            state = 0;
-        }
-    }
 }

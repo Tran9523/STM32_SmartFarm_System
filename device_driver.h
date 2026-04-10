@@ -6,9 +6,8 @@
 #include "macro.h"
 
 // ==========================================
-// [중요] 전역 변수 공유 (extern 선언)
+// 전역 변수 공유 (extern 선언)
 // ==========================================
-// exception.c 또는 main.c에 실제 정의된 변수들을 모든 파일이 알 수 있게 합니다.
 extern volatile unsigned int System_Tick;
 extern volatile int Emergency_Flag;
 extern volatile char Uart_Data;
@@ -24,7 +23,7 @@ extern void Uart2_Init(int baud);
 extern void Uart2_Send_Byte(char data);
 extern void Uart2_RX_Interrupt_Enable(int en);
 
-// ADC (수위: PA6 / 조도: PA7) - 충돌 회피용 신규 핀
+// ADC (수위: PA6 / 조도: PA7)
 extern void ADC1_Init(void);
 extern int ADC1_Read_Channel(int ch);
 
@@ -42,7 +41,6 @@ extern void Buzzer_Set(int freq);
 extern void Step_Init(void);
 extern void Step_Move(int steps, int dir);
 extern void Step_Move_Angle(int angle);
-extern void Step_Control(int cds);
 
 // Pump (급수 제어 DC 모터)
 extern void Pump_Init(void); // PB1, PB2
