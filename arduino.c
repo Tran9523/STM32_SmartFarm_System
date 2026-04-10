@@ -11,9 +11,8 @@ void Arduino_Comm_Init(void)
     Macro_Write_Block(GPIOA->PUPDR, 0x3, 0x2, 8); 
 }
 
-// 아두이노 신호(1 또는 0) 읽기
+// PA4 핀의 상태를 읽어서 High인지 Low인지 반환
 int Read_Arduino_Signal(void)
 {
-    // PA4 핀의 상태를 읽어서 1(High)인지 0(Low)인지 반환
     return Macro_Check_Bit_Set(GPIOA->IDR, 4);
 }

@@ -16,7 +16,7 @@ extern volatile int System_Mode;
 
 // System
 extern void Clock_Init(void);
-extern void TIM4_Repeat_Interrupt_Enable(int en, int time);
+extern void TIM4_Repeat_Interrupt_Enable(int time);
 
 // UART
 extern void Uart2_Init(int baud);

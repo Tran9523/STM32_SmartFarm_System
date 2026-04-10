@@ -1,4 +1,3 @@
-// Uart2_PC_Init(int baud), Uart1_WiFi_Init(int baud) - PC 디버깅 및 ESP8266 통신
 #include "device_driver.h"
 #include <stdio.h>
 #include <stdarg.h>

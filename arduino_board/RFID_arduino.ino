@@ -60,7 +60,7 @@ void loop() {
   rfid.PICC_HaltA();
   rfid.PCD_StopCrypto1();
 
-  delay(500);  // 같은 카드 연속 인식 완화
+  delay(500);
 }
 
 void sendSTM32Pulse(void) {

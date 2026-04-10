@@ -1,4 +1,3 @@
-// Clock_Init(void) - 16MHz/84MHz 등 메인 클럭 설정
 #include "device_driver.h"
 
 void Clock_Init(void)

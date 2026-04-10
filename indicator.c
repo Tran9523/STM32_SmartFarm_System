@@ -39,13 +39,13 @@ void RGB_LED_Set(int color) {
     if(color == 3) Macro_Set_Bit(GPIOA->ODR, 9); // Blue
 }
 
-// 부저 제어 (주파수 입력, 0이면 정지)
+// 부저 제어 (주파수 입력)
 void Buzzer_Set(int freq) {
     if(freq == 0) {
-        TIM3->CCR3 = 0;       // 소리 끄기
-        TIM3->ARR = 100 - 1;  // 펌프의 기본 ARR(1ms)로 원상복구!
+        TIM3->CCR3 = 0;
+        TIM3->ARR = 100 - 1;
     } else {
         TIM3->ARR = (100000 / freq) - 1; 
-        TIM3->CCR3 = TIM3->ARR / 2; // Duty 50%
+        TIM3->CCR3 = TIM3->ARR / 2; // Duty
     }
 }

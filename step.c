@@ -32,7 +32,6 @@ static void Step_Drive(int seq_idx)
     if(pattern[seq_idx][2]) out |= (1<<10);
     if(pattern[seq_idx][3]) out |= (1<<14);
 
-    // 안전하게 업데이트!
     int mask = (1<<8)|(1<<9)|(1<<10)|(1<<14);
     GPIOB->ODR = (GPIOB->ODR & ~mask) | out;
 

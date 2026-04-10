@@ -22,7 +22,6 @@ void Servo_Init(void)
     Macro_Set_Bit(TIM2->CR1, 0);  // 카운터 시작
 }
 
-// angle: 0 ~ 180도
 void Servo_Door_Set(int angle) {
     TIM2->CCR1 = 500 + (angle * 2000 / 180); 
 }
@@ -31,13 +30,11 @@ void Servo_Hose_Set(int angle) {
     TIM2->CCR2 = 500 + (angle * 2000 / 180);
 }
 
-// 문 서보 PWM 출력 켜기
 void Servo_Door_Enable(void)
 {
     Macro_Set_Bit(TIM2->CCER, 0);
 }
 
-// 문 서보 PWM 출력 끄기
 void Servo_Door_Disable(void)
 {
     Macro_Clear_Bit(TIM2->CCER, 0);

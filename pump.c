@@ -21,10 +21,10 @@ void Pump_Init(void)
 void Pump_Set(int enable, int duty)
 {
     if(enable) {
-        Macro_Set_Bit(GPIOB->ODR, 2); // 방향
-        TIM3->CCR4 = duty;            // 0 ~ 100% 속도
+        Macro_Set_Bit(GPIOB->ODR, 2); // On
+        TIM3->CCR4 = duty;
     } else {
         Macro_Clear_Bit(GPIOB->ODR, 2);
-        TIM3->CCR4 = 0;               // 정지
+        TIM3->CCR4 = 0;               // Off
     }
 }
