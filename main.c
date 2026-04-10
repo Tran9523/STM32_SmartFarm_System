@@ -141,8 +141,7 @@ int Main(void)
         // 비상시 아래 로직 무시
         if (Emergency_Flag) continue;
 
-        // 수위 경보 및 자동 급수 시스템
-        // 히스테리시스 적용
+        // 수위 센서 감지 및 자동 급수 시스템
         if (water_level < 1500) {
             is_water_shortage = 1; 
         } 
