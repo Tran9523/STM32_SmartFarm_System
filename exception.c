@@ -26,14 +26,13 @@ void TIM4_IRQHandler(void)
         Macro_Clear_Bit(TIM4->SR, 0); 
         System_Tick++;  
 
-        // 화재 센서 1초 연속 감지 필터링 로직
         if (Emergency_Flag == 0) 
         {
             if (Macro_Check_Bit_Set(GPIOC->IDR, 12)) {
                 fire_detect_count++;
 
                 if (fire_detect_count >= 1000) {
-                    Emergency_Flag = 1; // Flag On
+                    Emergency_Flag = 1;
                     
                     printf("\r\n[EMERGENCY] FIRE DETECTED (2 Sec Verified)!\r\n");
 
@@ -44,7 +43,6 @@ void TIM4_IRQHandler(void)
                 }
             } 
             else {
-                // 단 1ms라도 Low로 떨어지면 노이즈 처리
                 fire_detect_count = 0; 
             }
         }
@@ -73,7 +71,7 @@ void Fire_Interrupt_Init(void)
     Macro_Write_Block(GPIOC->PUPDR, 0x3, 0x1, 26);     // Pull-up
     Macro_Write_Block(SYSCFG->EXTICR[3], 0xF, 0x2, 4); // PC13 -> EXTI13
     Macro_Set_Bit(EXTI->IMR, 13);  
-    Macro_Set_Bit(EXTI->FTSR, 13); // Falling Edge (누를 때 트리거)
+    Macro_Set_Bit(EXTI->FTSR, 13); // Falling Edge
 
     // EXTI15_10_IRQn (IRQ 40) 활성화
     NVIC->ISER[1] = (1 << (40 - 32)); 
@@ -82,17 +80,15 @@ void Fire_Interrupt_Init(void)
 // EXTI15~10 인터럽트 (PC13 해제 버튼)
 void EXTI15_10_IRQHandler(void)
 {
+    // 비상 해제 유저 버튼 (PC13)
     if (Macro_Check_Bit_Set(EXTI->PR, 13))
     {
-        Macro_Set_Bit(EXTI->PR, 13); // 플래그 클리어
+        Macro_Set_Bit(EXTI->PR, 13);
         
-        // 현재 비상 상태일 때만
         if (Emergency_Flag == 1) 
         {
             Emergency_Flag = 0; 
             fire_detect_count = 0;
-            
-            printf("\r\n[NORMAL] EMERGENCY CLEARED! SYSTEM RESTART\r\n");
             
             Buzzer_Set(0);      
             RGB_LED_Set(2);     
