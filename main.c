@@ -20,10 +20,6 @@ int Main(void)
     setvbuf(stdout, NULL, _IONBF, 0); 
     
     TIM4_Repeat_Interrupt_Enable(1); // 1ms 시스템 틱
-    
-    printf("\r\n====================================\r\n");
-    printf("     Smart Farm System Started!     \r\n");
-    printf("====================================\r\n");
 
     // ==========================================
     // 2. 하드웨어 초기화
@@ -80,6 +76,9 @@ int Main(void)
 
     Servo_Door_Set(0); 
 
+    // ==========================================
+    // 4. 상태 제어 
+    // ==========================================
     while (1)
     {
         int is_active = 0;
@@ -92,15 +91,15 @@ int Main(void)
         // 실시간 모니터링 출력
         if (System_Tick - last_debug_print_time >= 1000) {
             printf("\r\n------------- [Sensor Status] -------------\r\n");
-            printf(" 💧 수위 센서 (Water) : %d\r\n", water_level);
-            printf(" ☀️ 조도 평균 (Light) : %d\r\n", samples_filled > 0 ? light_avg : light_level);
-            printf(" 🔥 화재 상태 (Fire)  : %s\r\n", Emergency_Flag ? "[비상!] 화재 감지됨" : "안전 (정상)");
-            printf(" 📡 RFID 수신 신호    : %d\r\n", rfid_signal);
+            printf(" 수위 센서 (Water) : %d\r\n", water_level);
+            printf(" 조도 평균 (Light) : %d\r\n", samples_filled > 0 ? light_avg : light_level);
+            printf(" 화재 상태 (Fire)  : %s\r\n", Emergency_Flag ? "[비상!] 화재 감지됨" : "안전 (정상)");
+            printf(" RFID 수신 신호    : %d\r\n", rfid_signal);
             printf("-------------------------------------------\r\n");
             last_debug_print_time = System_Tick;
         }
 
-        // [1번 기능] 출입 통제 시스템 (RFID)
+        // 출입 통제 시스템 (RFID)
         if ((rfid_signal == 1) && (prev_rfid_signal == 0)) {
             rfid_open_until = System_Tick + 10000; 
             printf("\r\n[EVENT] RFID Approved! Door opening for 10s.\r\n");
