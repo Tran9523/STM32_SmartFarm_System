@@ -33,8 +33,6 @@ void TIM4_IRQHandler(void)
 
                 if (fire_detect_count >= 1000) {
                     Emergency_Flag = 1;
-                    
-                    printf("\r\n[EMERGENCY] FIRE DETECTED (2 Sec Verified)!\r\n");
 
                     Pump_Set(0, 0);       
                     Env_LED_Set(0);       
