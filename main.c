@@ -162,7 +162,7 @@ int Main(void)
         } else {
             Buzzer_Set(0);
 
-            if (!is_watering && (System_Tick - last_watering_time >= 30000)) {  // 급수 주기 변경
+            if (!is_watering && (System_Tick - last_watering_time >= 5000)) {  // 급수 주기 변경
                 is_watering = 1;
                 water_start_time = System_Tick;
             }
@@ -171,14 +171,14 @@ int Main(void)
                 is_active = 1;
                 Pump_Set(1, 80);    // DC 파워 %
 
-                if (System_Tick - last_hose_sweep >= 90) {  // 호스 스윙
+                if (System_Tick - last_hose_sweep >= 100) {  // 호스 스윙
                     hose_angle += (hose_dir * 5);
                     if (hose_angle >= 50 || hose_angle <= 0) hose_dir *= -1;
                     Servo_Hose_Set(hose_angle);
                     last_hose_sweep = System_Tick;
                 }
 
-                if (System_Tick - water_start_time >= 1000) {   // 급수량(시간) 
+                if (System_Tick - water_start_time >= 5000) {   // 급수량(시간) 
                     is_watering = 0;
                     Pump_Set(0, 0);
                     last_watering_time = System_Tick;
