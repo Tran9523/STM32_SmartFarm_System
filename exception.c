@@ -6,6 +6,7 @@ volatile int Emergency_Flag = 0;
 
 // 화재 센서 카운터
 volatile unsigned int fire_detect_count = 0; 
+volatile int fire_check_start = 0;
 
 extern volatile char Uart_Data;
 extern volatile int Uart_Data_In;
@@ -26,13 +27,15 @@ void TIM4_IRQHandler(void)
         Macro_Clear_Bit(TIM4->SR, 0); 
         System_Tick++;  
 
-        if (Emergency_Flag == 0) 
+        if (Emergency_Flag == 0 && fire_check_start == 1) 
         {
             if (Macro_Check_Bit_Set(GPIOC->IDR, 12)) {
                 fire_detect_count++;
 
+                // 1초(1000ms) 신호 유지
                 if (fire_detect_count >= 1000) {
                     Emergency_Flag = 1;
+                    fire_check_start = 0;
 
                     Pump_Set(0, 0);       
                     Env_LED_Set(0);       
@@ -42,6 +45,8 @@ void TIM4_IRQHandler(void)
             } 
             else {
                 fire_detect_count = 0; 
+                fire_check_start = 0;
+                Macro_Set_Bit(EXTI->IMR, 12);
             }
         }
     }
@@ -60,25 +65,37 @@ void Fire_Interrupt_Init(void)
     Macro_Set_Bit(RCC->AHB1ENR, 2);  // GPIOC 클럭 ON
     Macro_Set_Bit(RCC->APB2ENR, 14); // SYSCFG 클럭 ON
 
-    // PC12 화재 센서 설정 (Input, Pull-down) 
+    // PC12 화재 센서 설정
     Macro_Write_Block(GPIOC->MODER, 0x3, 0x0, 24); 
     Macro_Write_Block(GPIOC->PUPDR, 0x3, 0x2, 24); 
+    Macro_Write_Block(SYSCFG->EXTICR[3], 0xF, 0x2, 0); // PC12 -> EXTI12
+    Macro_Set_Bit(EXTI->IMR, 12);
+    Macro_Set_Bit(EXTI->RTSR, 12); // Rising Edge
 
-    // PC13 유저 버튼 설정 (비상 해제용 버튼은 EXTI 사용)
-    Macro_Write_Block(GPIOC->MODER, 0x3, 0x0, 26);     // PC13 Input
-    Macro_Write_Block(GPIOC->PUPDR, 0x3, 0x1, 26);     // Pull-up
+    // PC13 유저 버튼 설정
+    Macro_Write_Block(GPIOC->MODER, 0x3, 0x0, 26);
+    Macro_Write_Block(GPIOC->PUPDR, 0x3, 0x1, 26);
     Macro_Write_Block(SYSCFG->EXTICR[3], 0xF, 0x2, 4); // PC13 -> EXTI13
     Macro_Set_Bit(EXTI->IMR, 13);  
     Macro_Set_Bit(EXTI->FTSR, 13); // Falling Edge
 
-    // EXTI15_10_IRQn (IRQ 40) 활성화
     NVIC->ISER[1] = (1 << (40 - 32)); 
 }
 
-// EXTI15~10 인터럽트 (PC13 해제 버튼)
+// EXTI15~10 인터럽트 (화재 센서 PC12 & 유저 버튼 PC13)
 void EXTI15_10_IRQHandler(void)
 {
-    // 비상 해제 유저 버튼 (PC13)
+    if (Macro_Check_Bit_Set(EXTI->PR, 12))
+    {
+        Macro_Set_Bit(EXTI->PR, 12);
+        
+        if (Emergency_Flag == 0 && fire_check_start == 0) {
+            Macro_Clear_Bit(EXTI->IMR, 12); // 노이즈로 인한 중복 인터럽트 방지를 위해 EXTI 비활성화
+            fire_check_start = 1;
+            fire_detect_count = 0;
+        }
+    }
+
     if (Macro_Check_Bit_Set(EXTI->PR, 13))
     {
         Macro_Set_Bit(EXTI->PR, 13);
@@ -87,6 +104,8 @@ void EXTI15_10_IRQHandler(void)
         {
             Emergency_Flag = 0; 
             fire_detect_count = 0;
+            fire_check_start = 0;
+            Macro_Set_Bit(EXTI->IMR, 12); // 비상 해제 시 화재 감지 EXTI 다시 활성화
             
             Buzzer_Set(0);      
             RGB_LED_Set(2);     
